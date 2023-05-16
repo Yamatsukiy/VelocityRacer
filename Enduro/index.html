@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velocity Racer</title>
+    <link rel="stylesheet" href="./CSS/stylelogin.css">
+</head>
+<body>
+    <video muted autoplay loop>
+        <source src="./video/1683984488-1683984488-hoonicorn-car-live-wallpaper.mp4"
+        type="video/mp4">
+    </video>
+    <div class="capa"></div>
+    <div class="box-login">
+        <i style="--clr: #04fce7;" ></i>
+        <i style="--clr: #00b2b2;" ></i>
+        <i style="--clr: #7cf6ff;" ></i>
+
+
+        <form onsubmit="signIn()" class="form-box"  >
+            <div class="login">
+                <h2>Acceso</h2>
+                <div class="input-box">
+                    <input type="text" placeholder="email" id="emailLogin">
+                </div>
+                <div class="input-box">
+                    <input type="password" placeholder="password" id="passLogin">
+                </div>
+            
+                <div class="input-box">
+                    <input type="submit" value="Aceptar">
+                </div>
+                <div class="links">
+                    <a class="signIn" href="#">Registrate</a>
+                </div>
+            </div>
+        </form>
+
+
+
+
+        <form onsubmit="signUp()" class="form-box">
+            <div class="sign-up">
+                <h2>Registro</h2>
+
+                <div class="input-box">
+                    <input type="text" placeholder="Email" id="email" required>
+                </div>
+
+                <div class="input-box">
+                    <input type="text" placeholder="Username" id="username" required>
+                </div>
+                <div class="input-box">
+                    <input type="password" placeholder="password" id="pass" required>
+                </div>
+            
+                <div class="input-box">
+                    <input type="submit" class="create"  value="Guardar">
+                </div>
+                <div class="links">
+                    <a class="create" href="./index.html">Inicio</a>
+                </div>
+            </div>
+        </form>
+
+
+
+
+
+
+    </div>
+
+
+
+
+<script src="./js/log_scrip.js"></script>
+
+<script>
+    let login = document.querySelector('.signIn');
+    login.addEventListener('click',() => {
+        let hide = document.querySelector('.login');
+        let current = hide.style.display;
+
+        if (current === 'none'){
+            hide.style.display = 'flex'
+        }else{
+            hide.style.display = 'none'
+        }
+
+        let hide2 = document.querySelector('.sign-up');
+        let current2 = hide2.style.display;
+
+        if (hide === 'none'){
+            hide2.style.display = 'none'
+        }else(
+            hide2.style.display = 'flex'
+        )
+})
+
+let create = document.querySelector('.create');
+    create.addEventListener('click',() => {
+        let hide = document.querySelector('.sign-up');
+        let current = hide.style.display;
+
+        if (current === 'none'){
+            hide.style.display = 'flex'
+        }else{
+            hide.style.display = 'none'
+        }
+
+        let hide2 = document.querySelector('.login');
+        let current2 = hide2.style.display;
+
+        if (hide === 'none'){
+            hide2.style.display = 'none'
+        }else(
+            hide2.style.display = 'flex'
+        )
+    })
+
+
+
+</script>
+</body>
+</html>

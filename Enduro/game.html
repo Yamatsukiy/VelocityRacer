@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velocity Racer</title>
+    <style>body{margin: 0;background: #0c4a6e; }</style>
+	<link rel="stylesheet" href="css/stylegame.css">
+	<script src="https://kit.fontawesome.com/eb496ab1a0.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+
+	<div class="container">
+        <input type="checkbox" id="btn-mas">
+        <div class="redes">
+            <a href="./game.html" class="reiniciar_game" >Reiniciar</a>
+            <a href="./web.html" class="pagina_inicio">Inicio</a>
+			<a href="./index.html" class="cerrar_secion">Cerrar Seción</a>
+        </div>
+        <div class="btn-mas">
+            <label for="btn-mas" class="fa fa-plus"></label>
+        </div>
+    <script>
+	const scene = new THREE.Scene()
+	const camera = new THREE.PerspectiveCamera(
+		75,
+		window.innerWidth / window.innerHeight,
+		0.1,
+		1000
+	)
+
+	const renderer = new THREE.WebGLRenderer({
+		alpha:true,
+		antialias: true
+	})
+	renderer.shadowMap.enabled =true
+	renderer.setSize(window.innerWidth, window.innerHeight)
+	document.body.appendChild(renderer.domElement)
+
+	//const controls = new OrbitControls(camera, renderer.domElement)
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        camera.position.set(0, 10, 20);
+        controls.update();
+
+	class Box extends THREE.Mesh{
+		constructor ({
+			width, 
+			height, 
+			depth, 
+			color = '#00ff00',
+			velocity={
+				x:0,
+				y:0,
+				z:0
+			},
+			position = {
+				x:0,
+				y:0,
+				z:0,
+			},
+			accelerationZ = false
+
+			}) {
+			super(
+					new THREE.BoxGeometry(width, height, depth),
+					new THREE.MeshStandardMaterial({ color: color })
+			)
+			this.width 	= width
+			this.height = height
+			this.depth 	= depth
+
+
+			this.position.set(position.x, position.y ,position.z)
+
+			this.right = this.position.x + this.width /2
+			this.left  = this.position.x - this.width /2
+
+			this.bottom = this.position.y - this.height / 2 
+			this.top    = this.position.y + this.height / 2
+			
+			this.front = this.position.z + this.depth / 2 
+			this.back  = this.position.z - this.depth / 2
+
+			this.velocity =  velocity
+			this.gravity = -0.006
+
+			this.accelerationZ = accelerationZ
+		}
+
+		updateSides(){
+			this.right = this.position.x + this.width /2
+			this.left  = this.position.x - this.width /2
+
+			this.bottom = this.position.y - this.height / 2 
+			this.top 	= this.position.y    + this.height / 2
+
+			this.front = this.position.z + this.depth / 2 
+			this.back  = this.position.z - this.depth / 2
+		}
+
+		update(ground){
+
+			this.updateSides()			
+			
+			if(this.accelerationZ) {
+				this.velocity.z = 0.05
+			}
+
+    		this.position.x += this.velocity.x
+    		this.position.z += this.velocity.z
+			this.applyGravity(ground)
+		}
+
+		applyGravity(ground){
+
+			this.velocity.y += this.gravity
+			// this is where we hit the ground
+		
+			if (boxCollision({
+				box1:this,
+				box2:ground
+			})){
+				this.velocity.y*= 0.4;
+				this.velocity.y = -this.velocity.y
+				this.velocity.x = 0
+			}else{
+				this.position.y += this.velocity.y
+			} 
+		}
+	}
+	function boxCollision({box1 , box2}) {
+		const xCollision = box1.right  >= box2.left && box1.left <= box2.right
+		const yCollision = box1.bottom  + box1.velocity.y <= box2.top  && box1.top  >= box2.bottom
+		const zCollision = box1.front  >= box2.back && box1.back <= box2.front
+		
+		return xCollision && yCollision && zCollision
+
+	}
+//console.log(loader)
+
+	const cube =  new Box({
+		width: 	1,
+		height: 0.1,
+		depth :	3.6,
+		velocity:{
+			x:0,
+			y:-0.05,
+			z:0
+		},
+	})
+	const loader = new THREE.GLTFLoader();
+	loader.load('asset/Nissan.glb', (obj) =>{
+ 		const root = obj.scene
+ 	   	console.log(root)
+ 	  	root.scale.set(0.6,0.6,0.6)
+		root.rotation.y = Math.PI
+		root.position.y = 0.7
+ 	   cube.add(root)
+	})
+	cube.material.transparent = true;
+	cube.material.opacity = 0
+	scene.add(cube)
+	const ground = new Box({
+		width: 	15,
+		height: 0.5,
+		depth :	200,
+		color:	'#0369a1',
+		position:{
+			x:0,
+			y:-2,
+			z:0,
+		}
+	})
+	ground.receiveShadow = true	
+	scene.add(ground)
+	const ligth = new THREE.DirectionalLight(0xffffff,1)
+	ligth.position.y = 2
+	ligth.position.z = 3
+	ligth.castShadow = true
+	scene.add(ligth)
+	scene.add(new THREE.AmbientLight(0xffffff,0.5))
+	camera.position.y =5	
+	camera.position.z =6 
+	camera.rotation.x =-0.8
+// movement Cubo 
+	const keys={
+    	a:{pressed : false},
+    	d:{pressed : false},
+    	s:{pressed : false},
+    	w:{pressed : false}
+	}
+
+	window.addEventListener('keydown', (event) => {
+
+    	if (event.code === 'KeyA' || event.code === 'ArrowLeft' ){
+        	keys.a.pressed = true
+        }
+    	if (event.code === 'KeyD' || event.code === 'ArrowRight'){
+        	keys.d.pressed = true
+    	}
+    	if (event.code === 'KeyS' || event.code === 'ArrowDown'){
+        	keys.s.pressed = true
+        }
+    	if (event.code === 'KeyW' || event.code === 'ArrowUp'){
+        	keys.w.pressed = true
+    	}
+	})
+
+	window.addEventListener('keyup', (event) => {
+
+
+
+    	if (event.code === 'KeyA' || event.code === 'ArrowLeft'      ){
+        	keys.a.pressed = false
+        }
+    	if (event.code === 'KeyD' || event.code === 'ArrowRight'){
+        	keys.d.pressed = false
+    	}
+    	if (event.code === 'KeyS' || event.code === 'ArrowDown'){
+        	keys.s.pressed = false
+        }
+    	if (event.code === 'KeyW' || event.code === 'ArrowUp' ){
+        	keys.w.pressed = false
+    	}
+	})
+
+//	ArrowLeft, ArrowRight, ArrowDown , ArrowUp
+
+
+//enemysss
+	const enemies = []
+
+	let frames = 0
+	let spawnRate = 200
+
+// Main
+	function animate() {
+		const animationID = requestAnimationFrame(animate)
+		renderer.render(scene, camera)
+		
+        
+        // render movement code
+		cube.velocity.x = 0
+		cube.velocity.z = 0
+		if(keys.a.pressed){
+			cube.velocity.x = -0.05
+		}
+		if(keys.d.pressed){
+			cube.velocity.x = 0.05
+		}
+		if(keys.s.pressed){
+			cube.velocity.z = 0.05
+		}
+		if(keys.w.pressed){
+			cube.velocity.z = -0.05
+		}
+
+		cube.update(ground)
+
+		enemies.forEach((enemy) => {
+			enemy.update(ground)
+			if (boxCollision({
+				box1:cube,
+				box2:enemy
+			})){
+				cancelAnimationFrame(animationID)
+				alert('Perdiste')
+			}
+		})
+		cube.update(ground)
+
+		if (frames % spawnRate === 0){
+			if(spawnRate > 100){
+				spawnRate-=100
+			}
+			const enemy =  new Box({
+				width: 	1,
+				height: 0.1,
+				depth :	3,
+				color: 'red',
+				velocity:{
+					x:0, 
+					y:0,
+					z:0.005
+				},
+				position:{
+					x: (Math.random() -0.6)*10,
+					y: -1,
+					z: -40
+				},
+				accelerationZ:true 
+			})			
+		loader.load('asset/car.glb', (obj) =>{
+ 			const enemyRoot = obj.scene
+ 	   		console.log( enemyRoot)
+ 	  		enemyRoot.scale.set(0.008,0.008,0.008)
+			enemyRoot.rotation.y = Math.PI
+			// enemyRoot.position.y = ''
+			enemy.add(enemyRoot)
+		})
+			enemy.material.transparent = true;
+			enemy.material.opacity = 0
+			scene.add(enemy)
+			enemies.push(enemy)
+		}
+		frames++
+
+	}
+
+	delete enemies
+	animate()
+    </script>
+</body>
+</html>
